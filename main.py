@@ -1,40 +1,42 @@
-#
-#Tutorials and documentation :
-#https://www.python-course.eu/neural_network_mnist.php
-#https://www.tensorflow.org/api_docs
-#https://www.digitalocean.com/community/tutorials/how-to-build-a-neural-network-to-recognize-handwritten-digits-with-tensorflow#step-1-%E2%80%94-configuring-the-project
-#
-
-import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
 
-image_size = 28 # width and length
-no_of_different_labels = 10 #  i.e. 0, 1, 2, 3, ..., 9
-image_pixels = image_size * image_size
-data_path = "data/"
-train_data = np.loadtxt(data_path + "mnist_train.csv", 
-                        delimiter=",")
-test_data = np.loadtxt(data_path + "mnist_test.csv", 
-                       delimiter=",") 
-test_data[:10]
+mnist = tf.keras.datasets.mnist
+(trainingImages, trainingLabels),(testImages, testLabels) = mnist.load_data()
+ 
+classes = 10
+imageHeight = 28
+imageWidth = 28
+epochNumber = 5
 
-test_data[test_data==255]
-test_data.shape
+# Display the caracteristics of our trainings image
+#   
+#print(trainingImages.shape)
+#print(trainingImages[0])
 
-n_input = 784 #First layer, input
-n_hidden1 = 512
-n_hidden2 = 256
-n_hidden3 = 128
-n_output = 10  # Last layer, output
+# Normalise the data so that our images become black and white (detail this in the report)
+trainingImages = trainingImages / 255.0
+testImages = testImages / 255.0
 
-learning_rate = 1e-4 # Parameter adjustment. larger learning rate -> faster convergence
-n_iterations = 1000 # Number of iteration of the training phase
-batch_size = 128 # Number of training example at each step
-dropout = 0.5 # Chance that a unit has to be randomly eliminated at each step (prevent overfitting)
+# layer creation, the input size is 28x28 : the size of our images. The output size is 10 : our number of classes
+model = tf.keras.models.Sequential([tf.keras.layers.Flatten(input_shape=(imageWidth,imageHeight)), 
+                                    tf.keras.layers.Dense(128, activation='relu'), 
+                                    tf.keras.layers.Dense(classes, activation=tf.nn.softmax)])
 
-#TODO :
-# Building graph
-# Training and testing
-# Documentation
-# Report
+model.compile(optimizer = 'adam',
+              loss = 'sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+model.fit(trainingImages, trainingLabels, epochs=epochNumber)
+
+
+# Show the accuracy of the model
+#
+#print(model.evaluate(testImages,testLabels))
+
+verificationIndex = 5
+
+plt.imshow(testImages[verificationIndex])
+prediction = model.predict(testImages)
+print(np.argmax(prediction[verificationIndex]))
